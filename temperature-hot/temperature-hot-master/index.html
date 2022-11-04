@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Temperature Hot</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url(images/bg-image.jpg) no-repeat;
+            background-size: cover;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form class="col-md-6 m-auto py-5">
+            <div class="input-group mb-3">
+                <input id="location" type="text" class="form-control" placeholder="Enter a location for Weather ...">
+                <div class="input-group-append">
+                    <button id="explore-weather" type="button" class="btn btn-danger">Search</button>
+                </div>
+            </div>
+        </form>
+        <div class="weather-status text-white text-center">
+            <img id="weather-icon" src="https://openweathermap.org/img/wn/02d@2x.png" alt="">
+            <h1 id="city">Dhaka</h1>
+            <h3><span id="temperture">38.06</span>&deg;C</h3>
+            <h1 id="weather" class="lead">Clouds</h1>
+        </div>
+    </div>
+
+    <script>   
+
+        document.getElementById("explore-weather").addEventListener("click", () => {
+            const cityName= document.getElementById("location").value;
+            findLatLon(cityName); 
+            document.getElementById("location").value= "";   
+        });
+
+        function findLatLon(city){
+            fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=146a4822f07f259f01df16936323cf09`)
+            .then(res => {
+                if( !res.ok ){
+                    return res.text()
+                    .then(text => { throw new Error(text) })
+                }
+                else{
+                    return res.json()
+                    .then(data => {
+                    document.getElementById("city").innerHTML= data[0].name;
+                    overallWeather(data[0].lat, data[0].lon);
+                    })  
+                }
+            })
+            .catch(err => {
+                alert('Make Sure, Your location is currect.');
+            });  
+        };
+
+        function overallWeather(lat, lon){
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=146a4822f07f259f01df16936323cf09`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("weather-icon").setAttribute('src', `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`)
+                const convertCelsius= data.main.temp - 273.15 ; /**kelvin - 273.15 = celsius*/
+                document.getElementById("temperture").innerHTML= convertCelsius.toFixed(2);
+                document.getElementById("weather").innerHTML= data.weather[0].main;
+            })
+        }
+
+    </script>
+</body>
+
+</html>
